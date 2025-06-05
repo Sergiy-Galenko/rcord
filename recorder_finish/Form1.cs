@@ -33,6 +33,10 @@ namespace recorder_finish
         {
             InitializeComponent();
             InitTimer();
+
+            // Забороняємо вводити нецифрові символи у поле вводу часу
+            timeInput.KeyPress += TimeInput_KeyPress;
+
             trackBar.Enabled = true; // дозволити повзунок спочатку
         }
 
@@ -72,7 +76,7 @@ namespace recorder_finish
 
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("Файл не знайдено.");
+                MessageBox.Show("Файл не знайдено.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -93,7 +97,7 @@ namespace recorder_finish
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося відкрити файл: {ex.Message}");
+                MessageBox.Show($"Не вдалося відкрити файл: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -119,6 +123,13 @@ namespace recorder_finish
 
         private void Record_Click(object sender, EventArgs e)
         {
+            // Якщо файл не існує, не дозволяємо записувати
+            if (!File.Exists(filePath))
+            {
+                MessageBox.Show("Немає файлу для запису. Спочатку створіть або відкрийте файл.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             StopAll();
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -177,7 +188,16 @@ namespace recorder_finish
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     filePath = dlg.FileName;
-                    if (File.Exists(filePath)) File.Delete(filePath);
+                    // Якщо файл уже існує, видаляємо, щоб створити новий порожній
+                    if (File.Exists(filePath))
+                        File.Delete(filePath);
+
+                    // Створюємо порожній MP3-файл (щоб File.Exists став true)
+                    using (var fs = File.Create(filePath))
+                    {
+                        // Просто закриваємо потік—файл існує, але порожній
+                    }
+
                     this.Text = $"КАСЕТНИЙ МАГНІТОФОН — {Path.GetFileName(filePath)}";
                     MessageBox.Show($"Файл для запису встановлено: {Path.GetFileName(filePath)}");
                 }
@@ -204,7 +224,7 @@ namespace recorder_finish
             if (File.Exists(filePath))
             {
                 File.Delete(filePath);
-                MessageBox.Show("Запис видалено.");
+                MessageBox.Show("Файл очищено.");
                 trackBar.Value = 0;
                 trackBar.Maximum = 1;
                 timeLabel.Text = "00:00 / 00:00";
@@ -219,7 +239,7 @@ namespace recorder_finish
             StopAll();
             if (!File.Exists(filePath))
             {
-                MessageBox.Show("Немає файлу для збереження.");
+                MessageBox.Show("Немає файлу для збереження.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -238,27 +258,27 @@ namespace recorder_finish
 
         private void GoToTime_Click(object sender, EventArgs e)
         {
+            // Перевірка: якщо файл не створено або не відкрито, забороняємо перехід
+            if (!File.Exists(filePath) || reader == null)
+            {
+                MessageBox.Show("Спочатку створіть або відкрийте файл.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (TimeSpan.TryParseExact(timeInput.Text, @"mm\:ss\.ff", null, out TimeSpan ts))
             {
                 double seconds = ts.TotalSeconds;
-                double maxSec = reader != null ? reader.TotalTime.TotalSeconds : trackBar.Maximum;
+                double maxSec = reader.TotalTime.TotalSeconds;
                 seconds = Math.Clamp(seconds, 0, maxSec);
 
                 int secInt = (int)Math.Round(seconds);
-                if (reader != null)
-                {
-                    reader.CurrentTime = TimeSpan.FromSeconds(secInt);
-                    timeLabel.Text = $"{TimeSpan.FromSeconds(secInt):mm\\:ss} / {reader.TotalTime:mm\\:ss}";
-                }
-                else
-                {
-                    timeLabel.Text = $"{TimeSpan.FromSeconds(secInt):mm\\:ss}";
-                }
+                reader.CurrentTime = TimeSpan.FromSeconds(secInt);
+                timeLabel.Text = $"{TimeSpan.FromSeconds(secInt):mm\\:ss} / {reader.TotalTime:mm\\:ss}";
                 trackBar.Value = secInt;
             }
             else
             {
-                MessageBox.Show("Неправильний формат часу. Приклад: 01:23.45");
+                MessageBox.Show("Неправильний формат часу. Приклад: 0123 (тільки цифри).", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
@@ -269,11 +289,15 @@ namespace recorder_finish
 
         private void trackBar_Scroll(object sender, EventArgs e)
         {
-            if (reader != null)
+            // Перевірка: якщо файл не створено або не відкрито, забороняємо скрол
+            if (!File.Exists(filePath) || reader == null)
             {
-                reader.CurrentTime = TimeSpan.FromSeconds(trackBar.Value);
-                timeLabel.Text = $"{reader.CurrentTime:mm\\:ss} / {reader.TotalTime:mm\\:ss}";
+                trackBar.Value = 0;
+                return;
             }
+
+            reader.CurrentTime = TimeSpan.FromSeconds(trackBar.Value);
+            timeLabel.Text = $"{reader.CurrentTime:mm\\:ss} / {reader.TotalTime:mm\\:ss}";
         }
 
         private void StopAll()
@@ -298,6 +322,16 @@ namespace recorder_finish
             waveIn = null;
             isRecording = false;
             trackBar.Enabled = true; // знову ввімкнути повзунок після зупинки
+        }
+
+        // Обробник, який забороняє вводити нецифрові символи
+        private void TimeInput_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Дозволяємо лише цифри та клавіші керування (Backspace тощо)
+            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+            {
+                e.Handled = true;
+            }
         }
     }
 }
