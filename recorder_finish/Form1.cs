@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using NAudio.Wave;
 using NAudio.Lame;
@@ -9,7 +11,7 @@ namespace recorder_finish
 {
     public partial class Form1 : Form
     {
-        // Constants
+        // Константи
         private const int SampleRate = 44100;
         private const int Channels = 1;
         private const int BitRate = 128;
@@ -17,6 +19,7 @@ namespace recorder_finish
         private const int BufferSize = 4096;
         private const string DefaultFilePath = "cassette.mp3";
 
+        // Поля для аудіо
         private WaveInEvent waveIn;
         private LameMP3FileWriter writer;
         private WaveOutEvent waveOut;
@@ -29,10 +32,18 @@ namespace recorder_finish
 
         private System.Timers.Timer timer;
 
+        // Відстежуємо, яка кнопка зараз «вибрана»
+        private Button _selectedButton;
+        // Зберігаємо стандартний колір кнопок, щоб повертати
+        private Color _defaultButtonColor;
+
         public Form1()
         {
             InitializeComponent();
             InitTimer();
+
+            // Збережемо стандартний BackColor від першої кнопки (якщо спеціально не встановлено)
+            _defaultButtonColor = playButton.BackColor;
 
             // Забороняємо вводити нецифрові символи у поле вводу часу
             timeInput.KeyPress += TimeInput_KeyPress;
@@ -48,30 +59,51 @@ namespace recorder_finish
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            Invoke(() =>
+            // Оскільки System.Timers.Timer працює на окремому потоці, 
+            // треба викликати через Invoke, щоб оновити UI
+            this.Invoke((MethodInvoker)(() =>
             {
                 if (isRecording)
                 {
-                    var recTime = DateTime.Now - recordingStart;
+                    TimeSpan recTime = DateTime.Now - recordingStart;
                     int totalSec = (int)(recordOffsetSec + recTime.TotalSeconds);
 
                     if (totalSec > trackBar.Maximum)
                         trackBar.Maximum = totalSec + 1;
 
                     trackBar.Value = totalSec;
-                    timeLabel.Text = $"{TimeSpan.FromSeconds(totalSec):mm\\:ss} (Запис)";
+                    timeLabel.Text = string.Format("{0:mm\\:ss} (Запис)", TimeSpan.FromSeconds(totalSec));
                 }
                 else if (waveOut != null && waveOut.PlaybackState == PlaybackState.Playing)
                 {
-                    var pos = reader.CurrentTime;
+                    TimeSpan pos = reader.CurrentTime;
                     trackBar.Value = Math.Min(trackBar.Maximum, (int)pos.TotalSeconds);
-                    timeLabel.Text = $"{pos:mm\\:ss} / {reader.TotalTime:mm\\:ss}";
+                    timeLabel.Text = string.Format("{0:mm\\:ss} / {1:mm\\:ss}", pos, reader.TotalTime);
                 }
-            });
+            }));
+        }
+
+        /// <summary>
+        /// Метод, який змінює колір натиснутої кнопки і повертає колір попередньої.
+        /// </summary>
+        private void UpdateSelectedButton(Button btn)
+        {
+            if (_selectedButton != null && _selectedButton != btn)
+            {
+                // Повертаємо попередній колір
+                _selectedButton.BackColor = _defaultButtonColor;
+            }
+
+            // Задаємо новому вибраному кнопці «натиснутий» колір (системний)
+            btn.BackColor = SystemColors.ControlDark;
+            _selectedButton = btn;
         }
 
         private void Play_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(playButton);
+
             StopAll();
 
             if (!File.Exists(filePath))
@@ -89,7 +121,9 @@ namespace recorder_finish
 
                 int startSec = trackBar.Value;
                 if (startSec > 0 && startSec < (int)reader.TotalTime.TotalSeconds)
+                {
                     reader.CurrentTime = TimeSpan.FromSeconds(startSec);
+                }
 
                 trackBar.Maximum = (int)reader.TotalTime.TotalSeconds;
                 waveOut.Play();
@@ -97,12 +131,15 @@ namespace recorder_finish
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося відкрити файл: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Не вдалося відкрити файл: " + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
         private void Pause_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(pauseButton);
+
             if (waveOut != null && waveOut.PlaybackState == PlaybackState.Playing)
             {
                 waveOut.Pause();
@@ -118,11 +155,17 @@ namespace recorder_finish
 
         private void Stop_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(stopButton);
+
             StopAll();
         }
 
         private void Record_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(recordButton);
+
             // Якщо файл не існує, не дозволяємо записувати
             if (!File.Exists(filePath))
             {
@@ -137,7 +180,8 @@ namespace recorder_finish
             recordOffsetSec = trackBar.Value;
             if (File.Exists(filePath) && recordOffsetSec > 0)
             {
-                var temp = Path.GetTempFileName();
+                // Вирізаємо початкові секунди до recordOffsetSec у тимчасовий файл
+                string temp = Path.GetTempFileName();
                 using (var readerMp3 = new Mp3FileReader(filePath))
                 using (var pcm = WaveFormatConversionStream.CreatePcmStream(readerMp3))
                 using (var trimWriter = new LameMP3FileWriter(temp, pcm.WaveFormat, BitRate))
@@ -181,6 +225,9 @@ namespace recorder_finish
 
         private void CreateFile_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(createFileButton);
+
             using (var dlg = new SaveFileDialog())
             {
                 dlg.Filter = "MP3 files (*.mp3)|*.mp3";
@@ -195,31 +242,37 @@ namespace recorder_finish
                     // Створюємо порожній MP3-файл (щоб File.Exists став true)
                     using (var fs = File.Create(filePath))
                     {
-                        // Просто закриваємо потік—файл існує, але порожній
+                        // Просто закриваємо потік — файл існує, але порожній
                     }
 
-                    this.Text = $"КАСЕТНИЙ МАГНІТОФОН — {Path.GetFileName(filePath)}";
-                    MessageBox.Show($"Файл для запису встановлено: {Path.GetFileName(filePath)}");
+                    this.Text = "КАСЕТНИЙ МАГНІТОФОН — " + Path.GetFileName(filePath);
+                    MessageBox.Show("Файл для запису встановлено: " + Path.GetFileName(filePath));
                 }
             }
         }
 
         private void Open_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(openButton);
+
             using (var dlg = new OpenFileDialog())
             {
                 dlg.Filter = "MP3 files (*.mp3)|*.mp3";
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     filePath = dlg.FileName;
-                    this.Text = $"КАСЕТНИЙ МАГНІТОФОН — {Path.GetFileName(filePath)}";
-                    MessageBox.Show($"Відкрито файл: {Path.GetFileName(filePath)}");
+                    this.Text = "КАСЕТНИЙ МАГНІТОФОН — " + Path.GetFileName(filePath);
+                    MessageBox.Show("Відкрито файл: " + Path.GetFileName(filePath));
                 }
             }
         }
 
         private void Delete_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(deleteButton);
+
             StopAll();
             if (File.Exists(filePath))
             {
@@ -236,6 +289,9 @@ namespace recorder_finish
 
         private void Save_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(saveButton);
+
             StopAll();
             if (!File.Exists(filePath))
             {
@@ -250,7 +306,7 @@ namespace recorder_finish
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     File.Copy(filePath, dlg.FileName, true);
-                    this.Text = $"КАСЕТНИЙ МАГНІТОФОН — {Path.GetFileName(dlg.FileName)}";
+                    this.Text = "КАСЕТНИЙ МАГНІТОФОН — " + Path.GetFileName(dlg.FileName);
                     MessageBox.Show("Запис збережено.");
                 }
             }
@@ -258,6 +314,9 @@ namespace recorder_finish
 
         private void GoToTime_Click(object sender, EventArgs e)
         {
+            // Змінюємо колір поточної кнопки
+            UpdateSelectedButton(goToTimeButton);
+
             // Перевірка: якщо файл не створено або не відкрито, забороняємо перехід
             if (!File.Exists(filePath) || reader == null)
             {
@@ -265,26 +324,28 @@ namespace recorder_finish
                 return;
             }
 
-            if (TimeSpan.TryParseExact(timeInput.Text, @"mm\:ss\.ff", null, out TimeSpan ts))
+            // Очікуємо формат mm:ss.ff (хв:сек.соті)
+            TimeSpan ts;
+            if (TimeSpan.TryParseExact(timeInput.Text, @"mm\:ss\.ff", null, out ts))
             {
                 double seconds = ts.TotalSeconds;
                 double maxSec = reader.TotalTime.TotalSeconds;
-                seconds = Math.Clamp(seconds, 0, maxSec);
+                seconds = Math.Min(Math.Max(seconds, 0), maxSec);
 
                 int secInt = (int)Math.Round(seconds);
                 reader.CurrentTime = TimeSpan.FromSeconds(secInt);
-                timeLabel.Text = $"{TimeSpan.FromSeconds(secInt):mm\\:ss} / {reader.TotalTime:mm\\:ss}";
+                timeLabel.Text = string.Format("{0:mm\\:ss} / {1:mm\\:ss}", TimeSpan.FromSeconds(secInt), reader.TotalTime);
                 trackBar.Value = secInt;
             }
             else
             {
-                MessageBox.Show("Неправильний формат часу. Приклад: 0123 (тільки цифри).", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Неправильний формат часу. Приклад: 01:23.45", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
         private void timeInput_TextChanged(object sender, EventArgs e)
         {
-            // за потреби валідація вводу
+            // Додаткова валідація за потреби
         }
 
         private void trackBar_Scroll(object sender, EventArgs e)
@@ -297,7 +358,7 @@ namespace recorder_finish
             }
 
             reader.CurrentTime = TimeSpan.FromSeconds(trackBar.Value);
-            timeLabel.Text = $"{reader.CurrentTime:mm\\:ss} / {reader.TotalTime:mm\\:ss}";
+            timeLabel.Text = string.Format("{0:mm\\:ss} / {1:mm\\:ss}", reader.CurrentTime, reader.TotalTime);
         }
 
         private void StopAll()
@@ -324,7 +385,6 @@ namespace recorder_finish
             trackBar.Enabled = true; // знову ввімкнути повзунок після зупинки
         }
 
-        // Обробник, який забороняє вводити нецифрові символи
         private void TimeInput_KeyPress(object sender, KeyPressEventArgs e)
         {
             // Дозволяємо лише цифри та клавіші керування (Backspace тощо)

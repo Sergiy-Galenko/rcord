@@ -1,17 +1,16 @@
 using System;
 using System.Windows.Forms;
-using recorder_finish; // <-- це важливо
 
-namespace recorder_finish
+namespace WindowsFormsApp1
 {
-    internal static class Program
+    static class Program
     {
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new recorder_finish.Form1());
         }
     }
 }
