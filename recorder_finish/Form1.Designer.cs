@@ -1,26 +1,22 @@
-﻿using System;
-using System.ComponentModel;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace recorder_finish
+﻿namespace recorder_finish
 {
     partial class Form1
     {
-        private IContainer components = null;
-
-        private Button playButton;
-        private Button pauseButton;
-        private Button stopButton;
-        private Button recordButton;
-        private Button deleteButton;
-        private Button saveButton;
-        private Button openButton;
-        private Button createFileButton;
-        private TrackBar trackBar;
-        private Label timeLabel;
-        private TextBox timeInput;
-        private Button goToTimeButton;
+        private System.ComponentModel.IContainer components = null;
+        private System.Windows.Forms.TableLayoutPanel tableLayout;
+        private System.Windows.Forms.FlowLayoutPanel flowButtons;
+        private System.Windows.Forms.Button playButton;
+        private System.Windows.Forms.Button pauseButton;
+        private System.Windows.Forms.Button stopButton;
+        private System.Windows.Forms.Button recordButton;
+        private System.Windows.Forms.Button deleteButton;
+        private System.Windows.Forms.Button saveButton;
+        private System.Windows.Forms.Button openButton;
+        private System.Windows.Forms.Button createFileButton;
+        private System.Windows.Forms.TrackBar trackBar;
+        private System.Windows.Forms.Label timeLabel;
+        private System.Windows.Forms.TextBox timeInput;
+        private System.Windows.Forms.Button goToTimeButton;
 
         protected override void Dispose(bool disposing)
         {
@@ -29,190 +25,159 @@ namespace recorder_finish
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
         private void InitializeComponent()
         {
-            this.playButton = new Button();
-            this.pauseButton = new Button();
-            this.stopButton = new Button();
-            this.recordButton = new Button();
-            this.deleteButton = new Button();
-            this.saveButton = new Button();
-            this.openButton = new Button();
-            this.createFileButton = new Button();
-            this.trackBar = new TrackBar();
-            this.timeLabel = new Label();
-            this.timeInput = new TextBox();
-            this.goToTimeButton = new Button();
-            ((ISupportInitialize)(this.trackBar)).BeginInit();
-            this.SuspendLayout();
+            this.components = new System.ComponentModel.Container();
+            this.tableLayout = new System.Windows.Forms.TableLayoutPanel();
+            this.flowButtons = new System.Windows.Forms.FlowLayoutPanel();
+            this.playButton = new System.Windows.Forms.Button();
+            this.pauseButton = new System.Windows.Forms.Button();
+            this.stopButton = new System.Windows.Forms.Button();
+            this.recordButton = new System.Windows.Forms.Button();
+            this.deleteButton = new System.Windows.Forms.Button();
+            this.saveButton = new System.Windows.Forms.Button();
+            this.openButton = new System.Windows.Forms.Button();
+            this.createFileButton = new System.Windows.Forms.Button();
+            this.trackBar = new System.Windows.Forms.TrackBar();
+            this.timeLabel = new System.Windows.Forms.Label();
+            this.timeInput = new System.Windows.Forms.TextBox();
+            this.goToTimeButton = new System.Windows.Forms.Button();
+
             // 
             // Form1
             // 
-            this.AutoScaleMode = AutoScaleMode.Font;
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
+            this.ClientSize = new System.Drawing.Size(800, 250);
+            this.MinimumSize = new System.Drawing.Size(400, 200);
             this.Text = "КАСЕТНИЙ МАГНІТОФОН";
-            // Забираємо фіксовану границю
-            this.FormBorderStyle = FormBorderStyle.Sizable;
-            // Щоб відразу розгортати на весь екран
-            this.WindowState = FormWindowState.Maximized;
-            this.StartPosition = FormStartPosition.CenterScreen;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+
+            // 
+            // tableLayout
+            // 
+            this.tableLayout.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayout.ColumnCount = 3;
+            this.tableLayout.RowCount = 2;
+            this.tableLayout.RowStyles.Add(
+                new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+            this.tableLayout.RowStyles.Add(
+                new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayout.ColumnStyles.Add(
+                new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
+            this.tableLayout.ColumnStyles.Add(
+                new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.tableLayout.ColumnStyles.Add(
+                new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.Controls.Add(this.tableLayout);
+
+            // 
+            // flowButtons
+            // 
+            this.flowButtons.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flowButtons.FlowDirection = System.Windows.Forms.FlowDirection.LeftToRight;
+            this.flowButtons.WrapContents = true;
+            this.flowButtons.AutoScroll = true;
+            this.tableLayout.Controls.Add(this.flowButtons, 0, 0);
+            this.tableLayout.SetColumnSpan(this.flowButtons, 3);
+
             // 
             // playButton
             // 
-            this.playButton.Location = new Point(20, 20);
-            this.playButton.Name = "playButton";
-            this.playButton.Size = new Size(90, 35);
-            this.playButton.TabIndex = 0;
             this.playButton.Text = "▶ Відтворити";
-            this.playButton.UseVisualStyleBackColor = true;
-            this.playButton.Click += new EventHandler(this.Play_Click);
-            // Анкоримо відстань від лівої та верхньої границі
-            this.playButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.playButton.AutoSize = true;
+            this.playButton.Click += new System.EventHandler(this.Play_Click);
+            this.flowButtons.Controls.Add(this.playButton);
+
             // 
             // pauseButton
             // 
-            this.pauseButton.Location = new Point(115, 20);
-            this.pauseButton.Name = "pauseButton";
-            this.pauseButton.Size = new Size(90, 35);
-            this.pauseButton.TabIndex = 1;
             this.pauseButton.Text = "⏸ Пауза";
-            this.pauseButton.UseVisualStyleBackColor = true;
-            this.pauseButton.Click += new EventHandler(this.Pause_Click);
-            this.pauseButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.pauseButton.AutoSize = true;
+            this.pauseButton.Click += new System.EventHandler(this.Pause_Click);
+            this.flowButtons.Controls.Add(this.pauseButton);
+
             // 
             // stopButton
             // 
-            this.stopButton.Location = new Point(210, 20);
-            this.stopButton.Name = "stopButton";
-            this.stopButton.Size = new Size(90, 35);
-            this.stopButton.TabIndex = 2;
             this.stopButton.Text = "⏹ Стоп";
-            this.stopButton.UseVisualStyleBackColor = true;
-            this.stopButton.Click += new EventHandler(this.Stop_Click);
-            this.stopButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.stopButton.AutoSize = true;
+            this.stopButton.Click += new System.EventHandler(this.Stop_Click);
+            this.flowButtons.Controls.Add(this.stopButton);
+
             // 
             // recordButton
             // 
-            this.recordButton.Location = new Point(305, 20);
-            this.recordButton.Name = "recordButton";
-            this.recordButton.Size = new Size(90, 35);
-            this.recordButton.TabIndex = 3;
             this.recordButton.Text = "🔴 Запис";
-            this.recordButton.UseVisualStyleBackColor = true;
-            this.recordButton.Click += new EventHandler(this.Record_Click);
-            this.recordButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.recordButton.AutoSize = true;
+            this.recordButton.Click += new System.EventHandler(this.Record_Click);
+            this.flowButtons.Controls.Add(this.recordButton);
+
             // 
             // deleteButton
             // 
-            this.deleteButton.Location = new Point(401, 20);
-            this.deleteButton.Name = "deleteButton";
-            this.deleteButton.Size = new Size(120, 35);
-            this.deleteButton.TabIndex = 4;
             this.deleteButton.Text = "🗑 Очистити";
-            this.deleteButton.UseVisualStyleBackColor = true;
-            this.deleteButton.Click += new EventHandler(this.Delete_Click);
-            this.deleteButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.deleteButton.AutoSize = true;
+            this.deleteButton.Click += new System.EventHandler(this.Delete_Click);
+            this.flowButtons.Controls.Add(this.deleteButton);
+
             // 
             // saveButton
             // 
-            this.saveButton.Location = new Point(530, 20);
-            this.saveButton.Name = "saveButton";
-            this.saveButton.Size = new Size(124, 35);
-            this.saveButton.TabIndex = 5;
             this.saveButton.Text = "💾 Скопіювати";
-            this.saveButton.UseVisualStyleBackColor = true;
-            this.saveButton.Click += new EventHandler(this.Save_Click);
-            this.saveButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.saveButton.AutoSize = true;
+            this.saveButton.Click += new System.EventHandler(this.Save_Click);
+            this.flowButtons.Controls.Add(this.saveButton);
+
             // 
             // openButton
             // 
-            this.openButton.Location = new Point(658, 20);
-            this.openButton.Name = "openButton";
-            this.openButton.Size = new Size(140, 35);
-            this.openButton.TabIndex = 6;
             this.openButton.Text = "📂 Відкрити";
-            this.openButton.UseVisualStyleBackColor = true;
-            this.openButton.Click += new EventHandler(this.Open_Click);
-            this.openButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.openButton.AutoSize = true;
+            this.openButton.Click += new System.EventHandler(this.Open_Click);
+            this.flowButtons.Controls.Add(this.openButton);
+
             // 
             // createFileButton
             // 
-            this.createFileButton.Location = new Point(804, 20);
-            this.createFileButton.Name = "createFileButton";
-            this.createFileButton.Size = new Size(134, 35);
-            this.createFileButton.TabIndex = 7;
             this.createFileButton.Text = "➕ Створити";
-            this.createFileButton.UseVisualStyleBackColor = true;
-            this.createFileButton.Click += new EventHandler(this.CreateFile_Click);
-            this.createFileButton.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            this.createFileButton.AutoSize = true;
+            this.createFileButton.Click += new System.EventHandler(this.CreateFile_Click);
+            this.flowButtons.Controls.Add(this.createFileButton);
+
             // 
             // trackBar
             // 
-            // Щоб трекбар розтягувався по ширині вікна
-            this.trackBar.Location = new Point(20, 70);
-            this.trackBar.Name = "trackBar";
-            // Ширина «зразу» не важлива – вона оновиться в момент завантаження форми,
-            // бо ми анкоримо праву та ліву межі
-            this.trackBar.Size = new Size(600, 56);
-            this.trackBar.TabIndex = 8;
-            this.trackBar.Scroll += new EventHandler(this.trackBar_Scroll);
-            this.trackBar.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            this.trackBar.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.trackBar.Minimum = 0;
+            this.trackBar.Maximum = 1;
+            this.trackBar.TickStyle = System.Windows.Forms.TickStyle.None;
+            this.trackBar.Scroll += new System.EventHandler(this.trackBar_Scroll);
+            this.tableLayout.Controls.Add(this.trackBar, 0, 1);
+
             // 
             // timeLabel
             // 
-            // Ярлик розташований праворуч від трекбару
-            this.timeLabel.Location = new Point(640, 77);
-            this.timeLabel.Name = "timeLabel";
-            this.timeLabel.Size = new Size(200, 30);
-            this.timeLabel.TabIndex = 9;
+            this.timeLabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.timeLabel.Text = "00:00 / 00:00";
-            this.timeLabel.TextAlign = ContentAlignment.MiddleLeft;
-            this.timeLabel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            this.timeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.tableLayout.Controls.Add(this.timeLabel, 1, 1);
+
             // 
             // timeInput
             // 
-            // Поле вводу розташоване праворуч угорі
-            this.timeInput.Location = new Point(640, 20);
-            this.timeInput.Name = "timeInput";
-            this.timeInput.Size = new Size(100, 27);
-            this.timeInput.TabIndex = 10;
+            this.timeInput.Dock = System.Windows.Forms.DockStyle.Fill;
             this.timeInput.Text = "00:00.00";
-            this.timeInput.TextChanged += new EventHandler(this.timeInput_TextChanged);
-            this.timeInput.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            this.timeInput.TextChanged += new System.EventHandler(this.timeInput_TextChanged);
+            this.tableLayout.Controls.Add(this.timeInput, 2, 1);
+
             // 
             // goToTimeButton
             // 
-            this.goToTimeButton.Location = new Point(750, 20);
-            this.goToTimeButton.Name = "goToTimeButton";
-            this.goToTimeButton.Size = new Size(80, 25);
-            this.goToTimeButton.TabIndex = 11;
             this.goToTimeButton.Text = "Перейти";
-            this.goToTimeButton.UseVisualStyleBackColor = true;
-            this.goToTimeButton.Click += new EventHandler(this.GoToTime_Click);
-            this.goToTimeButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            // 
-            // Form1 (продовження)
-            // 
-            // Вимикаємо фіксацію розмірів, дозволяємо користувачу змінювати розмір, і розгортаємо відразу на весь екран
-            this.ClientSize = new Size(900, 200);
-            this.Controls.Add(this.playButton);
-            this.Controls.Add(this.pauseButton);
-            this.Controls.Add(this.stopButton);
-            this.Controls.Add(this.recordButton);
-            this.Controls.Add(this.deleteButton);
-            this.Controls.Add(this.saveButton);
-            this.Controls.Add(this.openButton);
-            this.Controls.Add(this.createFileButton);
-            this.Controls.Add(this.trackBar);
-            this.Controls.Add(this.timeLabel);
-            this.Controls.Add(this.timeInput);
-            this.Controls.Add(this.goToTimeButton);
-            ((ISupportInitialize)(this.trackBar)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            this.goToTimeButton.AutoSize = true;
+            this.goToTimeButton.Click += new System.EventHandler(this.GoToTime_Click);
+            // Додаємо її в ту ж клітинку, що й timeInput (док- та паддінги за бажанням)
+            this.tableLayout.Controls.Add(this.goToTimeButton, 2, 1);
         }
-
-        #endregion
     }
 }
